@@ -1,0 +1,35 @@
+"""Capa de servicios de negocio compartidos entre la CLI y la API web."""
+
+from src.services.exceptions import (
+    CLIENTE_INACTIVO,
+    DNI_DUPLICADO,
+    ERROR_CODES,
+    FARMACEUTICO_INVALIDO,
+    NO_ENCONTRADO,
+    NO_IMPLEMENTADO,
+    OPERACION_CONFLICTO,
+    PRODUCTO_INACTIVO,
+    RECETA_INVALIDA,
+    RECETA_VENCIDA,
+    STOCK_INSUFICIENTE,
+    SUCURSAL_INVALIDA,
+    VALIDACION_ERROR,
+    DomainError,
+)
+
+__all__ = [
+    "CLIENTE_INACTIVO",
+    "DNI_DUPLICADO",
+    "DomainError",
+    "ERROR_CODES",
+    "FARMACEUTICO_INVALIDO",
+    "NO_ENCONTRADO",
+    "NO_IMPLEMENTADO",
+    "OPERACION_CONFLICTO",
+    "PRODUCTO_INACTIVO",
+    "RECETA_INVALIDA",
+    "RECETA_VENCIDA",
+    "STOCK_INSUFICIENTE",
+    "SUCURSAL_INVALIDA",
+    "VALIDACION_ERROR",
+]

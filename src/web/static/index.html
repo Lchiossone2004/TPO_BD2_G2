@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmaRed S.A. · Backoffice NoSQL Políglota</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-block">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+            <rect x="3" y="3" width="26" height="26" rx="7" fill="currentColor" opacity="0.14" />
+            <path d="M16 8.5v15M8.5 16h15" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">FarmaRed S.A. · Backoffice NoSQL Políglota</h1>
+          <p class="brand-subtitle">Consola operativa · MongoDB (Replica Set <code>rs0</code>) + Redis (Cache-Aside)</p>
+        </div>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-pill status-pill--date" title="Fecha de negocio calculada por hoy() en America/Argentina/Buenos_Aires">
+          <span class="status-label">Fecha de negocio</span>
+          <strong id="business-date-value" class="mono">Cargando…</strong>
+          <span id="business-tz-value" class="status-meta">America/Argentina/Buenos_Aires</span>
+        </div>
+
+        <div id="mongo-status-pill" class="status-pill status-pill--loading">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div class="status-text">
+            <span class="status-label">MongoDB (<code>rs0</code>)</span>
+            <strong id="mongo-status-value">Verificando…</strong>
+          </div>
+        </div>
+
+        <div id="redis-status-pill" class="status-pill status-pill--loading">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div class="status-text">
+            <span class="status-label">Redis (<code>cache-aside</code>)</span>
+            <strong id="redis-status-value">Verificando…</strong>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-refresh-health" type="button" class="btn btn-secondary">
+            Actualizar estado
+          </button>
+          <a href="/docs" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            Swagger UI (/docs)
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabbar" aria-label="Navegación principal">
+      <div class="tabbar-inner" role="tablist">
+        <button
+          id="tab-architecture"
+          type="button"
+          class="tab-btn is-active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-architecture"
+          data-tab="architecture"
+        >
+          Arquitectura y Modelos
+        </button>
+        <button
+          id="tab-queries"
+          type="button"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-queries"
+          data-tab="queries"
+        >
+          Consultas y Servicios (Q1–Q15)
+          <span id="queries-count-badge" class="tab-badge">15</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-shell">
+    <div id="health-banner" class="alert-banner is-hidden" role="status" aria-live="polite"></div>
+
+    <!-- PESTAÑA 1: ARQUITECTURA Y MODELOS -->
+    <section
+      id="panel-architecture"
+      class="tab-panel is-active"
+      role="tabpanel"
+      aria-labelledby="tab-architecture"
+    >
+      <div class="section-intro">
+        <div>
+          <span class="eyebrow">Arquitectura Políglota</span>
+          <h2>Distribución de motores, esquema documental y estrategia de consistencia</h2>
+          <p>
+            MongoDB actúa como fuente de verdad autoritativa con soporte ACID multi-documento en
+            <code>rs0</code> (incluido <code>stock_lotes</code> y <code>ventas</code> con ítems embebidos),
+            mientras Redis acelera lecturas de referencia en Q1 y Q8 con fallback automático ante caída.
+          </p>
+        </div>
+        <div id="arch-db-badge" class="meta-chip">
+          Base autoritativa: <strong class="mono">farmared</strong>
+        </div>
+      </div>
+
+      <div id="architecture-loading" class="loading-box">
+        Cargando arquitectura y modelos desde <code>GET /api/architecture</code>…
+      </div>
+
+      <div id="architecture-content" class="arch-content is-hidden">
+        <section class="arch-section">
+          <div class="arch-section-header">
+            <h3>1. Motores NoSQL y justificación técnica</h3>
+            <span class="section-note">2 paradigmas complementarios: Documental + Clave-Valor</span>
+          </div>
+          <div id="motors-grid" class="motors-grid"></div>
+        </section>
+
+        <section class="arch-section">
+          <div class="arch-section-header">
+            <h3>2. Consistencia ACID e idempotencia (Q14–Q15)</h3>
+            <span class="section-note">Transacción única sin saga distribuida</span>
+          </div>
+          <div id="consistency-panel" class="consistency-card"></div>
+        </section>
+
+        <section class="arch-section">
+          <div class="arch-section-header">
+            <h3>3. Estructuras en Redis (solo caché de referencia)</h3>
+            <span class="section-note">STRING JSON · TTL 300 s · Sin stock autoritativo</span>
+          </div>
+          <div id="redis-keys-grid" class="redis-grid"></div>
+        </section>
+
+        <section class="arch-section">
+          <div class="arch-section-header">
+            <h3>4. Esquema de colecciones en MongoDB (9 colecciones)</h3>
+            <span class="section-note">IDs de dominio como <code>_id</code> · Fechas de negocio UTC medianoche</span>
+          </div>
+          <div id="collections-grid" class="collections-grid"></div>
+        </section>
+
+        <section class="arch-section">
+          <div class="arch-section-header">
+            <h3>5. Alternativas evaluadas y descartadas</h3>
+            <span class="section-note">Justificación frente a complejidad operativa innecesaria</span>
+          </div>
+          <div id="alternatives-grid" class="alternatives-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: CONSULTAS Y SERVICIOS (Q1–Q15) -->
+    <section
+      id="panel-queries"
+      class="tab-panel"
+      role="tabpanel"
+      aria-labelledby="tab-queries"
+      hidden
+    >
+      <div class="queries-layout">
+        <aside class="queries-sidebar" aria-label="Listado de consultas y servicios">
+          <div class="sidebar-header">
+            <h2>Catálogo Q1–Q15</h2>
+            <span id="sidebar-total-label" class="sidebar-count">Cargando…</span>
+          </div>
+
+          <div class="filter-bar" role="group" aria-label="Filtrar por tipo de consulta">
+            <button type="button" class="filter-chip is-active" data-filter="all">Todas</button>
+            <button type="button" class="filter-chip" data-filter="Lectura">Lectura</button>
+            <button type="button" class="filter-chip" data-filter="Agregación">Agregación</button>
+            <button type="button" class="filter-chip" data-filter="Servicio">Servicio</button>
+          </div>
+
+          <div id="queries-list" class="queries-list">
+            <div class="loading-box">Cargando catálogo desde <code>GET /api/queries</code>…</div>
+          </div>
+        </aside>
+
+        <div class="query-workbench">
+          <div id="query-empty-state" class="empty-workbench">
+            Seleccioná cualquiera de las 15 consultas o servicios en la lista para ver su estrategia,
+            parámetros requeridos y probar el endpoint.
+          </div>
+
+          <article id="query-detail-panel" class="query-detail is-hidden">
+            <header class="detail-header">
+              <div class="detail-title-row">
+                <span id="detail-code" class="query-code-lg mono">Q1</span>
+                <div>
+                  <h2 id="detail-title" class="detail-title">Título de consulta</h2>
+                  <p id="detail-endpoint-line" class="detail-endpoint mono"></p>
+                </div>
+              </div>
+              <div id="detail-badges" class="badge-group"></div>
+            </header>
+
+            <div class="detail-meta-grid">
+              <div class="meta-card">
+                <h3>Descripción funcional</h3>
+                <p id="detail-description"></p>
+              </div>
+              <div class="meta-card">
+                <h3>Estrategia de relación y consistencia</h3>
+                <p id="detail-strategy"></p>
+              </div>
+            </div>
+
+            <section class="params-section">
+              <div class="params-header">
+                <h3>Parámetros y vista previa de solicitud</h3>
+                <span id="params-hint" class="params-hint"></span>
+              </div>
+              <form id="query-params-form" class="params-form" novalidate></form>
+              <div class="action-row">
+                <button id="btn-test-endpoint" type="button" class="btn btn-primary">
+                  Probar llamada al endpoint
+                </button>
+                <button id="btn-inspect-catalog" type="button" class="btn btn-secondary">
+                  Consultar metadato (/api/queries/{id})
+                </button>
+              </div>
+            </section>
+
+            <section class="results-section" aria-live="polite">
+              <div class="results-header">
+                <h3>Respuesta / Estado de ejecución</h3>
+                <span id="result-status-badge" class="badge badge--neutral">Sin ejecutar</span>
+              </div>
+              <div id="query-result-area" class="result-area">
+                <p class="result-placeholder">
+                  Presioná <strong>Probar llamada al endpoint</strong> para verificar la respuesta del backend
+                  o inspeccionar el estado de implementación de la Fase 3.
+                </p>
+              </div>
+            </section>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

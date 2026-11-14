@@ -1,0 +1,50 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: farmared-mongodb
+    hostname: mongodb
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    environment:
+      GLIBC_TUNABLES: "glibc.pthread.rseq=1"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - |
+          try {
+            const s = rs.status();
+            const h = db.hello();
+            if (s.ok !== 1 || !h.isWritablePrimary) quit(1);
+          } catch (e) {
+            try {
+              rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]});
+            } catch (_) {}
+            quit(1);
+          }
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: farmared-redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  mongodb_data:
