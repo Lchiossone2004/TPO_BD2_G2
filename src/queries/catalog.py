@@ -220,7 +220,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "[hoy - 1 año, hoy] (considerando también Pendientes y Anuladas como ventas registradas)."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q13",
