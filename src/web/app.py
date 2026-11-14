@@ -9,13 +9,16 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from src.clock import AR_TZ, format_iso_date, hoy
 from src.infrastructure.config import get_settings
 from src.infrastructure.mongo import check_mongo_health
 from src.infrastructure.redis_client import check_redis_health
+from src.queries import EJECUTORES
 from src.queries.catalog import QUERIES_CATALOG, get_query_metadata
-from src.services.exceptions import DomainError
+from src.services.exceptions import NO_ENCONTRADO, DomainError
+from src.services.serialization import a_json
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -449,6 +452,49 @@ def get_query_detail(query_id: str) -> Any:
         "status": "ready",
         "query": meta,
     }
+
+
+class ClienteRequest(BaseModel):
+    """Cuerpo de q13. Los campos no modificables se aceptan y el servicio los rechaza con un error de dominio."""
+
+    accion: str
+    id_cliente: str | None = None
+    nombre: str | None = None
+    apellido: str | None = None
+    dni: str | None = None
+    email: str | None = None
+    telefono: str | None = None
+    ciudad: str | None = None
+    provincia: str | None = None
+    obra_social: str | None = None
+    nro_afiliado: str | None = None
+
+
+@app.post(
+    "/api/services/clientes",
+    tags=["Servicios"],
+    summary="q13 — ABM de clientes (alta, modificación y baja lógica)",
+)
+def post_clientes(body: ClienteRequest) -> JSONResponse:
+    """Alta (201), modificación o baja lógica de un cliente; devuelve el estado antes y después."""
+    resultado = EJECUTORES["q13"](**body.model_dump())
+    codigo = 201 if resultado["accion"] == "alta" else 200
+    return JSONResponse(status_code=codigo, content={"status": "ok", **a_json(resultado)})
+
+
+@app.get(
+    "/api/services/clientes/{id_cliente}",
+    tags=["Servicios"],
+    summary="Consulta un cliente por ID (para ver el estado antes/después de q13)",
+)
+def get_cliente(id_cliente: str) -> dict[str, Any]:
+    """Devuelve el documento del cliente o 404."""
+    from src.infrastructure.mongo import get_shared_db
+
+    cliente = get_shared_db()["clientes"].find_one({"_id": id_cliente})
+    if cliente is None:
+        raise DomainError(NO_ENCONTRADO, f"No existe el cliente {id_cliente}.", 404, {"id_cliente": id_cliente})
+    return a_json(cliente)
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

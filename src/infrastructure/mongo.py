@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 from src.infrastructure.config import get_settings
@@ -36,6 +37,17 @@ def get_db(client: MongoClient | None = None, db_name: str | None = None) -> Dat
     resolved_client = client if client is not None else get_mongo_client()
     resolved_db_name = db_name or get_settings().mongodb_db
     return resolved_client[resolved_db_name]
+
+
+@lru_cache(maxsize=1)
+def get_shared_client() -> MongoClient:
+    """Cliente único del proceso (API, CLI): evita abrir una conexión por pedido."""
+    return get_mongo_client()
+
+
+def get_shared_db() -> Database:
+    """Base de datos configurada usando el cliente compartido del proceso."""
+    return get_db(client=get_shared_client())
 
 
 def check_mongo_health() -> dict[str, Any]:
@@ -86,4 +98,4 @@ def check_mongo_health() -> dict[str, Any]:
                 pass
 
 
-__all__ = ["check_mongo_health", "get_db", "get_mongo_client"]
+__all__ = ["check_mongo_health", "get_db", "get_mongo_client", "get_shared_client", "get_shared_db"]

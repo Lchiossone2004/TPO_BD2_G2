@@ -14,8 +14,10 @@ from typing import Sequence
 from src.clock import AR_TZ, format_iso_date, hoy
 from src.infrastructure.mongo import check_mongo_health
 from src.infrastructure.redis_client import check_redis_health
+from src.queries import EJECUTORES
 from src.queries.catalog import QUERIES_CATALOG, get_query_metadata
-from src.services.exceptions import NO_IMPLEMENTADO, DomainError
+from src.services.exceptions import NO_IMPLEMENTADO, VALIDACION_ERROR, DomainError
+from src.services.serialization import a_json
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,6 +41,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--query",
         metavar="qXX",
         help="Ejecuta o informa el estado de la consulta o servicio indicado (ej. q01).",
+    )
+    parser.add_argument(
+        "--param",
+        action="append",
+        default=[],
+        metavar="clave=valor",
+        help="Parámetro de la consulta (repetible), ej. --param accion=alta --param dni=30111222.",
     )
     return parser
 
@@ -73,7 +82,7 @@ def _handle_list() -> int:
     return 0
 
 
-def _handle_query(query_id: str) -> int:
+def _handle_query(query_id: str, raw_params: Sequence[str] = ()) -> int:
     meta = get_query_metadata(query_id)
     if meta is None:
         print(
@@ -101,6 +110,23 @@ def _handle_query(query_id: str) -> int:
         print(json.dumps(err.to_dict(), indent=2, ensure_ascii=False))
         return 0
 
+    executor = EJECUTORES.get(meta["id"])
+    if executor is None:
+        print(json.dumps(DomainError(NO_IMPLEMENTADO, f"{meta['id']} no tiene ejecutor registrado.", 501).to_dict(),
+                         indent=2, ensure_ascii=False))
+        return 1
+    try:
+        params = dict(item.split("=", 1) for item in raw_params)
+        result = executor(**params)
+    except (ValueError, TypeError) as exc:
+        err = DomainError(VALIDACION_ERROR, f"Parámetros inválidos ({exc}). Parámetros válidos: "
+                          f"{', '.join(meta['parameters']) or 'ninguno'}; formato clave=valor.", 400)
+        print(json.dumps(err.to_dict(), indent=2, ensure_ascii=False))
+        return 1
+    except DomainError as err:
+        print(json.dumps(err.to_dict(), indent=2, ensure_ascii=False))
+        return 1
+    print(json.dumps(a_json(result), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -114,7 +140,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.list:
         return _handle_list()
     if args.query:
-        return _handle_query(args.query)
+        return _handle_query(args.query, args.param)
 
     parser.print_help()
     return 0

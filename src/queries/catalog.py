@@ -252,7 +252,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "obra_social",
             "nro_afiliado",
         ],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q14",
