@@ -1135,7 +1135,7 @@
     const preview = buildRequestPreview(q);
     const shouldInspectCatalog = forceCatalogInspect || !q.implemented;
     const targetMethod = shouldInspectCatalog ? "GET" : preview.method;
-    const targetUrl = shouldInspectCatalog ? `/api/queries/${encodeURIComponent(q.id)}` : preview.url;
+    const targetUrl = shouldInspectCatalog ? `/api/queries/${encodeURIComponent(q.id)}?meta=true` : preview.url;
 
     els.btnTestEndpoint.disabled = true;
     els.btnInspectCatalog.disabled = true;
