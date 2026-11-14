@@ -283,7 +283,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "items",
             "id_operacion",
         ],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q15",
@@ -305,7 +305,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "stock_aplicado."
         ),
         "parameters": ["id_venta"],
-        "implemented": False,
+        "implemented": True,
     },
 ]
 

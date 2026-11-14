@@ -1028,7 +1028,7 @@
           <input id="param-id_venta" name="id_venta" type="text" value="V001" placeholder="Ej. V001 o fixture técnico" required />
           <div class="sample-chips">
             <button type="button" class="sample-chip" data-fill-input="param-id_venta" data-fill-value="V001">V001</button>
-            <button type="button" class="sample-chip" data-fill-input="param-id_venta" data-fill-value="V002">V002</button>
+            <button type="button" class="sample-chip" data-fill-input="param-id_venta" data-fill-value="V900">V900 (fixture)</button>
           </div>
         </div>
       </div>

@@ -521,6 +521,63 @@ def get_cliente(id_cliente: str) -> dict[str, Any]:
     return a_json(cliente)
 
 
+class VentaItem(BaseModel):
+    id_producto: str
+    cantidad: int
+
+
+class VentaRequest(BaseModel):
+    """Cuerpo de q14. ``id_operacion`` identifica el pedido para reintentos idempotentes."""
+
+    id_cliente: str
+    id_farmaceutico: str
+    id_receta: str | None = None
+    medio_pago: str
+    items: list[VentaItem]
+    id_operacion: str | None = None
+
+
+class DescuentoRequest(BaseModel):
+    id_venta: str
+
+
+@app.post(
+    "/api/services/ventas",
+    tags=["Servicios"],
+    summary="q14 — Venta integrada (venta + receta + descuento FEFO en una transacción)",
+)
+def post_ventas(body: VentaRequest) -> JSONResponse:
+    """201 si se registra una venta nueva; 200 si el ``id_operacion`` ya estaba confirmado con el mismo pedido."""
+    resultado = EJECUTORES["q14"](**body.model_dump())
+    codigo = 200 if resultado["idempotente"] else 201
+    return JSONResponse(status_code=codigo, content={"status": "ok", **a_json(resultado)})
+
+
+@app.post(
+    "/api/services/stock/descontar",
+    tags=["Servicios"],
+    summary="q15 — Descuento de stock FEFO de una venta registrada",
+)
+def post_descontar_stock(body: DescuentoRequest) -> JSONResponse:
+    """Descuenta el stock de una venta Completada sin stock aplicado; si ya estaba aplicado, solo informa."""
+    resultado = EJECUTORES["q15"](**body.model_dump())
+    return JSONResponse(status_code=200, content={"status": "ok", **a_json(resultado)})
+
+
+@app.get(
+    "/api/services/ventas/{id_venta}",
+    tags=["Servicios"],
+    summary="Consulta una venta por ID (para ver el resultado de q14/q15)",
+)
+def get_venta(id_venta: str) -> dict[str, Any]:
+    from src.infrastructure.mongo import get_shared_db
+
+    venta = get_shared_db()["ventas"].find_one({"_id": id_venta})
+    if venta is None:
+        raise DomainError(NO_ENCONTRADO, f"No existe la venta {id_venta}.", 404, {"id_venta": id_venta})
+    return a_json(venta)
+
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
