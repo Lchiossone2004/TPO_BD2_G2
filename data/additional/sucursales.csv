@@ -1,0 +1,11 @@
+id_sucursal,nombre,tipo,direccion,ciudad,provincia,telefono,activo
+S006,Farmacia Mar del Plata,Farmacia,Av. Colón 2210,Mar del Plata,Buenos Aires,2234006006,True
+S007,Farmacia Mendoza Centro,Farmacia,Av. San Martín 1180,Mendoza,Mendoza,2614007007,True
+S008,Farmacia Tucumán,Farmacia,Calle 24 de Septiembre 650,San Miguel de Tucumán,Tucumán,3814008008,True
+S009,Farmacia Salta Norte,Farmacia,Av. Belgrano 940,Salta,Salta,3874009009,True
+S010,Droguería Cuyo,Droguería,Ruta 7 km 5,Mendoza,Mendoza,2614010010,True
+S011,Farmacia La Plata,Farmacia,Calle 7 N° 845,La Plata,Buenos Aires,2214011011,True
+S012,Farmacia Neuquén,Farmacia,Av. Argentina 1320,Neuquén,Neuquén,2994012012,True
+S013,Farmacia Quilmes,Farmacia,Av. Mitre 310,Quilmes,Buenos Aires,1142013013,True
+S014,Droguería Litoral,Droguería,Ruta 11 km 8,Santa Fe,Santa Fe,3424014014,True
+S015,Farmacia Bahía Blanca,Farmacia,Calle Alsina 215,Bahía Blanca,Buenos Aires,2914015015,False

@@ -28,8 +28,8 @@ El sistema combina dos motores de paradigmas distintos:
 ├── .gitignore
 ├── README.md
 ├── data/
-│   ├── originales/                     # Los 9 CSV originales provistos por la cátedra (sin modificar)
-│   └── adicionales/                    # Datasets adicionales propios del grupo
+│   ├── original/                       # Los 9 CSV originales provistos por la cátedra (sin modificar)
+│   └── additional/                     # Datasets adicionales propios del grupo
 ├── seed.py                             # Script de carga reproducible e idempotente + creación de índices
 ├── main.py                             # Runner CLI para healthcheck y consultas/servicios Q1–Q15
 ├── src/
@@ -121,11 +121,16 @@ python main.py --health
 
 ### Cargar los datasets (originales + adicionales)
 
-La carga es explícita e idempotente (resetea únicamente la base configurada y las claves Redis del proyecto, crea los índices y carga `data/originales/` y `data/adicionales/`):
+La carga es explícita e idempotente (resetea únicamente la base configurada y las claves Redis del proyecto, crea los índices y carga `data/original/` y `data/additional/`):
 
 ```bash
-python seed.py
+python seed.py                           # genera los adicionales con la fecha de hoy, valida y carga
+python seed.py --dry-run                 # valida todo sin tocar MongoDB ni Redis
+python seed.py --original-only           # solo los 9 CSV originales
+python seed.py --base-date 2026-10-13    # fija la fecha base de los escenarios relativos
 ```
+
+Los CSV de `data/additional/` los genera `src/loading/extra_data.py` a partir de la fecha base, para que Q5, Q6, Q11 y Q12 siempre tengan datos vigentes; con la misma fecha base el resultado es idéntico. Si algún dato es inválido (tipos, referencias, totales, reglas de recetas) el seed lo informa y no modifica la base. Ejecutarlo antes de la defensa.
 
 ### Arrancar la Web y API FastAPI
 

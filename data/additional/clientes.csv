@@ -1,0 +1,11 @@
+id_cliente,nombre,apellido,dni,email,telefono,ciudad,provincia,obra_social,nro_afiliado,activo
+C009,Valentina,Ríos,36521478,val.rios@gmail.com,1145009009,Buenos Aires,Buenos Aires,OSDE,OS-455120,True
+C010,Joaquín,Molina,29874512,joaquin.m@gmail.com,2614010010,Mendoza,Mendoza,Swiss Medical,SM-310778,True
+C011,Agustina,Peralta,41236985,agus.p@gmail.com,2234011011,Mar del Plata,Buenos Aires,PAMI,PA-882014,True
+C012,Leandro,Suárez,32654789,leandro.s@gmail.com,3814012012,San Miguel de Tucumán,Tucumán,Galeno,GA-771233,False
+C013,Marina,Sosa,27458963,,3874013013,Salta,Salta,Sin cobertura,,True
+C014,Bruno,Castro,38741256,bruno.c@gmail.com,2214014014,La Plata,Buenos Aires,IOMA,IO-651207,True
+C015,Daniela,Vera,35698741,dani.v@gmail.com,2994015015,Neuquén,Neuquén,OSDE,OS-233901,True
+C016,Gonzalo,Ibáñez,30258741,gonzalo.i@gmail.com,1142016016,Quilmes,Buenos Aires,Sin cobertura,,True
+C017,Rosa,Domínguez,12365478,rosa.d@gmail.com,3424017017,Santa Fe,Santa Fe,PAMI,PA-410096,True
+C018,Tamara,Luna,42587963,tamara.l@gmail.com,2914018018,Bahía Blanca,Buenos Aires,Galeno,GA-118542,True

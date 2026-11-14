@@ -1,4 +1,4 @@
-"""Pruebas de Fase 0 y Fase 1: datasets originales, reloj, MongoDB rs0 (ACID), Redis y Web FastAPI."""
+"""Pruebas datasets originales, reloj, MongoDB, Redis y Web FastAPI."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from src.infrastructure.redis_client import check_redis_health, get_redis_client
 from src.web.app import app
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ORIGINALES_DIR = PROJECT_ROOT / "data" / "originales"
+ORIGINALES_DIR = PROJECT_ROOT / "data" / "original"
 
 EXPECTED_CSV_COUNTS = {
     "clientes.csv": 8,
@@ -35,7 +35,7 @@ class _DeliberateTransactionAbort(RuntimeError):
 
 
 def test_original_csv_datasets_present_and_complete() -> None:
-    """Verifica que los 9 CSV originales estén extraídos en data/originales/ con sus conteos."""
+    """Verifica que los 9 CSV originales estén extraídos en data/original/ con sus conteos."""
     total_rows = 0
     for filename, expected_count in EXPECTED_CSV_COUNTS.items():
         path = ORIGINALES_DIR / filename
