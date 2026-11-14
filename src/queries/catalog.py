@@ -58,7 +58,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "unificadas en orden cronológico usando fecha y fecha_emision con tipo e ID como desempate."
         ),
         "parameters": ["id_cliente"],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q04",
