@@ -93,7 +93,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "en [hoy - 60 días, hoy] excluyendo estado = 'Anulada', preservando los ceros."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q06",
