@@ -39,7 +39,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "con farmaceuticos y sucursales mediante $lookup."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q03",
