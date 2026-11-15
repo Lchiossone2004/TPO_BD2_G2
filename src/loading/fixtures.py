@@ -1,4 +1,13 @@
-"""Fixture para demostrar q15 sola (no forma parte de los CSV ni del flujo normal de q14)."""
+"""Fixture técnico para demostrar q15 sola (no forma parte de los CSV ni del flujo normal de q14).
+
+Crea una venta Completada de origen ``servicio`` con ``stock_aplicado = false`` y dos lotes con stock
+explícito que vencen antes que el resto, de modo que el resultado FEFO sea siempre el mismo:
+
+    python -m src.loading.fixtures          # (re)crea el escenario sobre la base configurada
+    python main.py --query q15 --param id_venta=V900
+
+Volver a ejecutarlo restaura el escenario para repetir la demostración.
+"""
 
 from __future__ import annotations
 
@@ -15,8 +24,10 @@ ID_CLIENTE = "C001"
 CANTIDAD = 4
 
 
-def crear_fixture_q15(db: Any) -> dict[str, Any]:
-    """Inserta (o restaura) el escenario y devuelve la venta creada."""
+def crear_fixture_q15(db: Any, cantidad: int = CANTIDAD) -> dict[str, Any]:
+    """Inserta (o restaura) el escenario y devuelve la venta creada.
+
+    ``cantidad`` permite preparar el caso de stock insuficiente (p. ej. 5000 unidades)."""
     farmaceutico = db["farmaceuticos"].find_one({"_id": ID_FARMACEUTICO})
     producto = db["productos"].find_one({"_id": ID_PRODUCTO})
     if farmaceutico is None or producto is None:
@@ -32,10 +43,10 @@ def crear_fixture_q15(db: Any) -> dict[str, Any]:
     venta = {
         "_id": ID_VENTA, "id_cliente": ID_CLIENTE, "id_farmaceutico": ID_FARMACEUTICO, "id_receta": None,
         "fecha": date_to_bson(base), "tipo": "Venta libre", "medio_pago": "Efectivo",
-        "total": CANTIDAD * producto["precio_unit"], "estado": "Completada", "origen": "servicio",
+        "total": cantidad * producto["precio_unit"], "estado": "Completada", "origen": "servicio",
         "id_operacion": None, "huella_solicitud": None, "stock_aplicado": False, "asignaciones_stock": [],
         "items": [{"id_detalle": "D900", "id_producto": ID_PRODUCTO, "nombre_producto": producto["nombre"],
-                   "cantidad": CANTIDAD, "precio_unit": producto["precio_unit"]}],
+                   "cantidad": cantidad, "precio_unit": producto["precio_unit"]}],
     }
     db["ventas"].insert_one(venta)
     return venta
