@@ -74,7 +74,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "y enriquecimiento de datos del cliente con $lookup hacia clientes."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q05",
