@@ -112,7 +112,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "proxima_dispensa != null y < hoy) con $lookup hacia clientes."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q07",
