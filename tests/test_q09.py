@@ -86,8 +86,8 @@ def test_endpoint_y_cli_ejecutan_y_serializan_fechas(db, capsys):
     respuesta = TestClient(app).get("/api/queries/q09")
     assert respuesta.status_code == 200
     assert main.main(["--query", "q09"]) == 0
-    assert json.loads(capsys.readouterr().out) == respuesta.json()["result"] == a_json(q09.ejecutar(db=db))
-    assert respuesta.json()["result"][0]["fecha"] == "2026-10-02"
+    assert json.loads(capsys.readouterr().out) == respuesta.json()["resultado"] == a_json(q09.ejecutar(db=db))
+    assert respuesta.json()["resultado"][0]["fecha"] == "2026-10-02"
 
 
 def test_catalogo_y_registro_habilitan_q09():
@@ -101,4 +101,4 @@ def test_api_y_cli_comparten_ejecutor_y_serializan_fechas(monkeypatch, capsys):
     respuesta = TestClient(app).get("/api/queries/q09")
     assert respuesta.status_code == 200
     assert main.main(["--query", "q09"]) == 0
-    assert json.loads(capsys.readouterr().out) == respuesta.json()["result"] == a_json(resultado)
+    assert json.loads(capsys.readouterr().out) == respuesta.json()["resultado"] == a_json(resultado)

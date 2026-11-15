@@ -69,7 +69,7 @@ def test_endpoint_y_cli_ejecutan_la_consulta(db, capsys):
     assert respuesta.status_code == 200
     assert respuesta.json()["status"] == "ok"
     esperado = q04.ejecutar(db=db)
-    assert respuesta.json()["result"] == esperado
+    assert respuesta.json()["resultado"] == esperado
     assert main.main(["--query", "q04"]) == 0
     assert json.loads(capsys.readouterr().out) == esperado
 
@@ -86,4 +86,4 @@ def test_api_y_cli_comparten_el_ejecutor(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out) == esperado
     respuesta = TestClient(app).get("/api/queries/q04")
     assert respuesta.status_code == 200
-    assert respuesta.json()["result"] == esperado
+    assert respuesta.json()["resultado"] == esperado

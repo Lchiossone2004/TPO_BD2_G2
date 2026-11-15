@@ -89,7 +89,7 @@ def test_endpoint_y_cli_ejecutan_la_consulta(db, capsys):
     respuesta = TestClient(app).get("/api/queries/q07")
     assert respuesta.status_code == 200
     assert main.main(["--query", "q07"]) == 0
-    assert json.loads(capsys.readouterr().out) == respuesta.json()["result"] == q07.ejecutar(db=db)
+    assert json.loads(capsys.readouterr().out) == respuesta.json()["resultado"] == q07.ejecutar(db=db)
 
 
 def test_catalogo_y_registro_habilitan_q07():
@@ -103,4 +103,4 @@ def test_api_y_cli_comparten_ejecutor(monkeypatch, capsys):
     respuesta = TestClient(app).get("/api/queries/q07")
     assert respuesta.status_code == 200
     assert main.main(["--query", "q07"]) == 0
-    assert json.loads(capsys.readouterr().out) == respuesta.json()["result"] == esperado
+    assert json.loads(capsys.readouterr().out) == respuesta.json()["resultado"] == esperado
