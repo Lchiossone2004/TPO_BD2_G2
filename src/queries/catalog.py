@@ -130,7 +130,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "items embebidos, $group sumando cantidades, desempate por id_producto y $lookup a productos."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q08",
