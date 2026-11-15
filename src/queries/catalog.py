@@ -20,7 +20,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "farmared:proveedor:<id>) con fallback a MongoDB sin filtrar la actividad del proveedor."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q02",
@@ -147,7 +147,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "(con fallback a MongoDB) y sucursal desde MongoDB."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q09",
@@ -184,7 +184,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "(sin filtrar activo) con $lookup hacia ventas y clientes, agrupando clientes distintos."
         ),
         "parameters": ["id_sucursal"],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q11",
@@ -204,7 +204,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "(incluyendo inactivos)."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q12",

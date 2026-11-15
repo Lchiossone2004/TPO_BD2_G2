@@ -1177,6 +1177,10 @@
   function renderSmartDataBlock(data) {
     const rows = Array.isArray(data)
       ? data
+      : data && Array.isArray(data.result)
+      ? data.result
+      : data && data.result && Array.isArray(data.result.historial)
+      ? data.result.historial
       : data && Array.isArray(data.results)
       ? data.results
       : data && Array.isArray(data.items)

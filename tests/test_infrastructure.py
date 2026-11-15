@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from src.clock import AR_TZ, bson_to_date, date_to_bson, fixed_clock, format_iso_date, hoy
 from src.infrastructure.mongo import check_mongo_health, get_db, get_mongo_client
 from src.infrastructure.redis_client import check_redis_health, get_redis_client
+from src.queries import catalog as catalog_module
 from src.web.app import app
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -157,7 +158,7 @@ def test_redis_connectivity_ttl_and_degraded_fallback(monkeypatch: pytest.Monkey
     assert "fallback" in degraded["message"].lower()
 
 
-def test_web_app_initial_endpoints() -> None:
+def test_web_app_initial_endpoints(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verifica la aplicación FastAPI inicial, estáticos HTML, health, arquitectura y catálogo Q1–Q15."""
     client = TestClient(app)
 
@@ -187,7 +188,8 @@ def test_web_app_initial_endpoints() -> None:
     assert queries_data["total"] == 15
     assert len(queries_data["queries"]) == 15
 
-    pending_resp = client.get("/api/queries/q01")
+    monkeypatch.setitem(catalog_module._CATALOG_BY_ID["q09"], "implemented", False)
+    pending_resp = client.get("/api/queries/q09")
     assert pending_resp.status_code == 501
     assert pending_resp.json()["status"] == "pending"
 
