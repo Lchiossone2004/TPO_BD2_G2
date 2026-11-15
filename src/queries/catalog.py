@@ -165,7 +165,7 @@ QUERIES_CATALOG: list[dict[str, Any]] = [
             "total < 5000 y estado != 'Anulada', aprovechando los ítems embebidos en el documento."
         ),
         "parameters": [],
-        "implemented": False,
+        "implemented": True,
     },
     {
         "id": "q10",
