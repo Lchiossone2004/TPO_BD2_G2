@@ -17,8 +17,9 @@ from src.infrastructure.mongo import check_mongo_health
 from src.infrastructure.redis_client import check_redis_health
 from src.queries import EJECUTORES
 from src.queries.catalog import QUERIES_CATALOG, get_query_metadata
-from src.services.exceptions import NO_ENCONTRADO, VALIDACION_ERROR, DomainError
+from src.services.exceptions import NO_ENCONTRADO, DomainError
 from src.services.serialization import a_json
+from src.web.demo_api import router as demo_router
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -27,6 +28,9 @@ app = FastAPI(
     version="0.1.0",
     description="API HTTP y Consola Web de FarmaRed S.A. con MongoDB (Replica Set rs0) y Redis.",
 )
+
+
+app.include_router(demo_router)
 
 
 @app.exception_handler(DomainError)
@@ -422,16 +426,12 @@ def list_queries() -> dict[str, Any]:
 @app.get(
     "/api/queries/{query_id}",
     tags=["Consultas"],
-    summary="Ejecuta una consulta de lectura Q1–Q12 (o devuelve sus metadatos con ?meta=true)",
+    summary="Detalle o estado de implementación de una consulta Q1–Q15",
 )
-def get_query_detail(query_id: str, request: Request, meta: bool = False) -> Any:
-    """Ejecuta la consulta con los parámetros de la URL; con ``meta=true`` solo devuelve el catálogo.
-
-    Los servicios de escritura (Q13–Q15) no se ejecutan por GET: devuelven sus metadatos.
-    HTTP 501 si la consulta todavía no está implementada.
-    """
-    entry = _resolve_query_metadata(query_id)
-    if entry is None:
+def get_query_detail(query_id: str, request: Request) -> Any:
+    """Devuelve los metadatos de la consulta o HTTP 501 si corresponde a la Fase 3."""
+    meta = _resolve_query_metadata(query_id)
+    if meta is None:
         raise DomainError(
             code="NO_ENCONTRADO",
             message=f"La consulta '{query_id}' no existe en el catálogo Q1–Q15.",
@@ -439,12 +439,12 @@ def get_query_detail(query_id: str, request: Request, meta: bool = False) -> Any
             details={"query_id": query_id},
         )
 
-    if not entry.get("implemented", False):
+    if not meta.get("implemented", False):
         return JSONResponse(
             status_code=501,
             content={
                 "status": "pending",
-                "query": entry,
+                "query": meta,
                 "message": (
                     f"La consulta {query_id.upper()} forma parte de la Fase 3 "
                     "y aún no fue implementada en este hito inicial."
@@ -452,30 +452,16 @@ def get_query_detail(query_id: str, request: Request, meta: bool = False) -> Any
             },
         )
 
-    ejecutor = EJECUTORES.get(entry["id"])
-    if meta or entry.get("method") != "GET" or ejecutor is None:
-        return {"status": "ready", "query": entry}
+    ejecutor = EJECUTORES.get(meta["id"])
+    if ejecutor is not None and meta.get("method") == "GET":
+        # Consultas de lectura q01-q12: cada una se registra en EJECUTORES y recibe los parámetros de la URL.
+        parametros = {k: v for k, v in request.query_params.items() if v != ""}
+        return {"status": "ok", "query": meta, "resultado": a_json(ejecutor(**parametros))}
 
-    # Solo se aceptan los parámetros declarados en el catálogo; cualquier otro es un error del cliente.
-    recibidos = {k: v for k, v in request.query_params.items() if k != "meta"}
-    desconocidos = sorted(set(recibidos) - set(entry["parameters"]))
-    if desconocidos:
-        raise DomainError(
-            VALIDACION_ERROR,
-            f"Parámetros no válidos: {', '.join(desconocidos)}.",
-            400,
-            {"validos": entry["parameters"]},
-        )
-    try:
-        resultado = ejecutor(**recibidos)
-    except TypeError as exc:  # p. ej. falta un parámetro obligatorio
-        raise DomainError(
-            VALIDACION_ERROR,
-            f"Parámetros inválidos ({exc}).",
-            400,
-            {"validos": entry["parameters"]},
-        ) from exc
-    return {"status": "ok", "query": entry["id"], "result": a_json(resultado)}
+    return {
+        "status": "ready",
+        "query": meta,
+    }
 
 
 class ClienteRequest(BaseModel):
