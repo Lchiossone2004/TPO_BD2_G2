@@ -105,6 +105,16 @@
     return [{ valor: res }];
   }
 
+  function historialHtml(res) {
+    const c = res.cliente || {}, h = res.historial || [];
+    const ficha = `<div class="card"><h2>Cliente ${esc(c._id)}</h2><p>${esc(c.nombre)} ${esc(c.apellido)} · DNI ${esc(c.dni)} · ${esc(c.ciudad)}, ${esc(c.provincia)} · ${esc(c.obra_social || "sin obra social")} · ${c.activo ? "activo" : "inactivo"}</p></div>`;
+    if (!h.length) return ficha + `<div class="card"><h2>Historial</h2><p class="muted">Este cliente no tiene ventas ni recetas registradas. Probá con <code>C001</code> para ver un historial completo.</p></div>`;
+    const resumen = (e) => { const d = e.detalle || {};
+      return e.tipo === "venta" ? `${esc(d.estado)} · ${esc(d.tipo_venta)} · $${esc(d.total)} · ${(d.items || []).length} ítem(s)${d.id_receta ? ` · receta ${esc(d.id_receta)}` : ""}`
+          : `${esc(d.estado)} · ${esc(d.tipo_receta)} · ${esc(d.medico)} · dispensas ${esc(d.dispensas_realizadas)}/${esc(d.dispensas_autorizadas)}${d.proxima_dispensa ? ` · próxima ${esc(d.proxima_dispensa)}` : ""}`; };
+    return ficha + `<div class="card"><h2>Historial (${h.length})</h2><div class="table-wrap"><table class="data"><thead><tr><th>Fecha</th><th>Tipo</th><th>ID</th><th>Detalle</th></tr></thead><tbody>${h.map((e) => `<tr><td>${fdate(e.fecha)}</td><td>${esc(e.tipo)}</td><td><code>${esc(e.id)}</code></td><td>${resumen(e)}</td></tr>`).join("")}</tbody></table></div></div>`;
+  }
+
   const delta = (a, b) => { const d = b - a; return `<span class="delta ${d < 0 ? "neg" : d > 0 ? "pos" : "zero"}">${d > 0 ? "+" : ""}${d}</span>`; };
 
   // ---------- línea de tiempo (paso a paso) ----------
@@ -190,6 +200,8 @@
       const r = await api(`${q.endpoint}?${params}`);
       if (r.status === 501 || (r.data && r.data.status === "pending")) { out.innerHTML = banner("info", "ⓘ", "Todavía no está implementada", "Se habilita cuando se registre su ejecutor en el backend."); return; }
       if (!r.ok) { const er = errorOf(r); out.innerHTML = banner("bad", "✕", `<span class="badge-code">${esc(er.code)}</span>`, esc(er.message)); return; }
+      const res0 = r.data.resultado;
+      if (res0 && res0.cliente && Array.isArray(res0.historial)) { out.innerHTML = banner("ok", "✓", `${res0.historial.length} ${res0.historial.length === 1 ? "movimiento" : "movimientos"} en ${r.ms} ms`) + historialHtml(res0) + jsonBlock(r.data); return; }
       const rows = rowsOf(r.data.resultado);
       out.innerHTML = banner("ok", "✓", `${rows.length} ${rows.length === 1 ? "fila" : "filas"} en ${r.ms} ms`) + `<div class="card"><h2>Resultado</h2>${tableHtml(rows)}</div>` + jsonBlock(r.data);
     });
@@ -448,11 +460,11 @@
   }
   function mountLive(host, names, { title = "Datos en vivo (MongoDB)" } = {}) {
     clearInterval(liveState.timer);
-    const st = { names, cur: names ? names[0] : null, base: {}, prev: {}, auto: true, desc: !!names, filter: "", counts: {} };
+    const st = { names, cur: names ? names[0] : null, base: {}, prev: {}, auto: false, desc: !!names, filter: "", counts: {} };
     host.innerHTML = `<div class="card live"><div class="live-head"><h2>${esc(title)}</h2>
       <div class="live-ctrl"><input type="search" class="live-filter" placeholder="Filtrar filas…" aria-label="Filtrar filas" />
       <label class="toggle"><input type="checkbox" class="live-desc" ${names ? "checked" : ""} /> Más nuevos primero</label>
-      <label class="toggle"><input type="checkbox" class="live-auto" checked /> Actualizar solo</label>
+      <label class="toggle"><input type="checkbox" class="live-auto" /> Actualizar solo</label>
       <button class="btn" type="button" data-act="refresh">Actualizar</button>
       <button class="btn ghost" type="button" data-act="mark" title="Toma el estado actual como punto de partida para las diferencias">Marcar punto de partida</button></div></div>
       <div class="live-tabs"></div><div class="live-body"></div></div>`;
@@ -503,7 +515,7 @@
   }
   function renderDatos() {
     $("#main").innerHTML = `<div class="page-head"><div class="kicker">MONGODB · SOLO LECTURA</div><h1>Datos en vivo</h1>
-      <p class="muted">Todas las colecciones con su cantidad de documentos. Se actualiza solo cada 2 s: las filas nuevas se marcan en verde y las modificadas en amarillo.</p></div><div id="live"></div>`;
+      <p class="muted">Todas las colecciones con su cantidad de documentos. Con «Actualizar solo» se refresca cada 2 s (o con el botón Actualizar)</p></div><div id="live"></div>`;
     mountLive($("#live"), null, { title: "Colecciones" });
   }
 
