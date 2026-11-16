@@ -171,8 +171,8 @@ def test_endpoint_cli_catalogo_y_registro(
         respuesta = TestClient(app).get("/api/queries/q11")
         assert respuesta.status_code == 200
         assert respuesta.json()["status"] == "ok"
-        assert respuesta.json()["query"] == "q11"
-        assert respuesta.json()["result"] == esperado
+        assert respuesta.json()["query"]["id"] == "q11"
+        assert respuesta.json()["resultado"] == esperado
 
         assert main.main(["--query", "q11"]) == 0
         assert json.loads(capsys.readouterr().out) == esperado
@@ -181,6 +181,6 @@ def test_endpoint_cli_catalogo_y_registro(
     monkeypatch.setitem(EJECUTORES, "q11", lambda: mock_resultado)
     respuesta_mock = TestClient(app).get("/api/queries/q11")
     assert respuesta_mock.status_code == 200
-    assert respuesta_mock.json()["result"] == mock_resultado
+    assert respuesta_mock.json()["resultado"] == mock_resultado
     assert main.main(["--query", "q11"]) == 0
     assert json.loads(capsys.readouterr().out) == mock_resultado

@@ -187,7 +187,7 @@ def test_endpoint_cli_catalogo_y_registro(db, monkeypatch: pytest.MonkeyPatch, c
     assert respuesta.status_code == 200
     assert respuesta.json()["status"] == "ok"
     esperado = q01.ejecutar(db=db)
-    assert respuesta.json()["result"] == esperado
+    assert respuesta.json()["resultado"] == esperado
 
     assert main.main(["--query", "q01"]) == 0
     assert json.loads(capsys.readouterr().out) == esperado
@@ -198,4 +198,4 @@ def test_endpoint_cli_catalogo_y_registro(db, monkeypatch: pytest.MonkeyPatch, c
     assert json.loads(capsys.readouterr().out) == simulado
     resp_compartida = TestClient(app).get("/api/queries/q01")
     assert resp_compartida.status_code == 200
-    assert resp_compartida.json()["result"] == simulado
+    assert resp_compartida.json()["resultado"] == simulado

@@ -47,4 +47,4 @@ def test_endpoint_http_ejecuta_la_consulta(db) -> None:
     r = TestClient(app).get("/api/queries/q02")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
-    assert {v["id_venta"] for v in r.json()["result"]} == {"V011", "V012"}
+    assert {v["id_venta"] for v in r.json()["resultado"]} == {"V011", "V012"}

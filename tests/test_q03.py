@@ -74,6 +74,6 @@ def test_endpoint_http_recibe_el_parametro(db) -> None:
     c = TestClient(app)
     r = c.get("/api/queries/q03", params={"id_cliente": "C001"})
     assert r.status_code == 200
-    assert len(r.json()["result"]["historial"]) == 6
+    assert len(r.json()["resultado"]["historial"]) == 6
     assert c.get("/api/queries/q03").status_code == 400
     assert c.get("/api/queries/q03", params={"id_cliente": "C999"}).status_code == 404

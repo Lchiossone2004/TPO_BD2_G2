@@ -130,8 +130,8 @@ def test_endpoint_cli_catalogo_y_registro(
     respuesta = cliente.get("/api/queries/q10", params={"id_sucursal": "S002"})
     assert respuesta.status_code == 200
     assert respuesta.json()["status"] == "ok"
-    assert respuesta.json()["query"] == "q10"
-    assert respuesta.json()["result"] == esperado
+    assert respuesta.json()["query"]["id"] == "q10"
+    assert respuesta.json()["resultado"] == esperado
 
     sin_parametro = cliente.get("/api/queries/q10")
     assert sin_parametro.status_code == 400
@@ -157,7 +157,7 @@ def test_endpoint_cli_catalogo_y_registro(
     monkeypatch.setitem(EJECUTORES, "q10", ejecutor_compartido)
     resp_compartida = cliente.get("/api/queries/q10", params={"id_sucursal": "S002"})
     assert resp_compartida.status_code == 200
-    assert resp_compartida.json()["result"] == simulado
+    assert resp_compartida.json()["resultado"] == simulado
     assert main.main(["--query", "q10", "--param", "id_sucursal=S002"]) == 0
     assert json.loads(capsys.readouterr().out) == simulado
     assert llamadas == ["S002", "S002"]

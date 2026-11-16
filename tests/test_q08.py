@@ -274,12 +274,12 @@ def test_endpoint_cli_catalogo_y_registro(db, monkeypatch: pytest.MonkeyPatch, c
     assert respuesta.status_code == 200
     cuerpo = respuesta.json()
     assert cuerpo["status"] == "ok"
-    assert cuerpo["query"] == "q08"
+    assert cuerpo["query"]["id"] == "q08"
 
     esperado = a_json(q08.ejecutar(db=db))
-    assert cuerpo["result"] == esperado
-    assert cuerpo["result"][0]["vencimiento"] == "2027-01-31"
-    assert cuerpo["result"][1]["vencimiento"] == "2026-09-30"
+    assert cuerpo["resultado"] == esperado
+    assert cuerpo["resultado"][0]["vencimiento"] == "2027-01-31"
+    assert cuerpo["resultado"][1]["vencimiento"] == "2026-09-30"
 
     assert main.main(["--query", "q08"]) == 0
     assert json.loads(capsys.readouterr().out) == esperado
@@ -288,6 +288,6 @@ def test_endpoint_cli_catalogo_y_registro(db, monkeypatch: pytest.MonkeyPatch, c
     monkeypatch.setitem(EJECUTORES, "q08", lambda: simulado)
     respuesta_compartida = TestClient(app).get("/api/queries/q08")
     assert respuesta_compartida.status_code == 200
-    assert respuesta_compartida.json()["result"] == [{"id_lote": "L999", "vencimiento": "2026-09-30"}]
+    assert respuesta_compartida.json()["resultado"] == [{"id_lote": "L999", "vencimiento": "2026-09-30"}]
     assert main.main(["--query", "q08"]) == 0
-    assert json.loads(capsys.readouterr().out) == respuesta_compartida.json()["result"]
+    assert json.loads(capsys.readouterr().out) == respuesta_compartida.json()["resultado"]
