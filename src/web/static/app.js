@@ -198,6 +198,7 @@
       const params = new URLSearchParams(new FormData(e.target)); const out = $("#out");
       out.innerHTML = '<div class="card"><div class="skeleton"></div><div class="skeleton" style="width:70%"></div></div>';
       const r = await api(`${q.endpoint}?${params}`);
+      loadHealth();
       if (r.status === 501 || (r.data && r.data.status === "pending")) { out.innerHTML = banner("info", "ⓘ", "Todavía no está implementada", "Se habilita cuando se registre su ejecutor en el backend."); return; }
       if (!r.ok) { const er = errorOf(r); out.innerHTML = banner("bad", "✕", `<span class="badge-code">${esc(er.code)}</span>`, esc(er.message)); return; }
       const res0 = r.data.resultado;
