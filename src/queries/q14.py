@@ -94,7 +94,6 @@ def _nuevo_estado_receta(receta: dict[str, Any], fecha_venta: Any) -> dict[str, 
         return {"dispensas_realizadas": realizadas, "proxima_dispensa": proxima, "estado": "Vigente"}
     return {"dispensas_realizadas": realizadas, "proxima_dispensa": None, "estado": "Completada"}
 
-
 def ejecutar(
     id_cliente: str | None = None,
     id_farmaceutico: str | None = None,
@@ -105,7 +104,17 @@ def ejecutar(
     *,
     db: Any = None,
 ) -> dict[str, Any]:
-    """Registra una venta Completada validando, descontando stock FEFO y actualizando la receta, todo o nada."""
+    """Registra una venta Completada validando, descontando stock FEFO y actualizando la receta, todo o nada.
+
+    Propósito: alta de una venta con receta (si hay productos bajo receta) y descuento de stock en una
+    única transacción; ante cualquier error no queda ningún cambio.
+    Parámetros: ``id_cliente``, ``id_farmaceutico``, ``medio_pago``, ``items`` (lista de
+    ``{id_producto, cantidad}`` o ``PRD001:2,PRD002:1``), ``id_receta`` (obligatoria si hay productos bajo
+    receta) e ``id_operacion`` (clave de idempotencia; se genera si falta).
+    Retorno: ``{venta, idempotente, receta_antes, receta_despues, id_operacion, id_operacion_generado}``.
+    Un reintento con el mismo ``id_operacion`` y el mismo pedido devuelve la venta ya registrada.
+    Motor: MongoDB (``ventas``, ``recetas``, ``stock_lotes``, ``contadores``) con transacción multi-documento.
+    """
     id_cliente = (id_cliente or "").strip()
     id_farmaceutico = (id_farmaceutico or "").strip()
     id_receta = (id_receta or "").strip() or None

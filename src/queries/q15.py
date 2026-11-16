@@ -25,9 +25,11 @@ def _resultado(venta: dict[str, Any], aplicado_ahora: bool, nota: str | None = N
         "nota": nota,
     }
 
-
 def ejecutar(id_venta: str | None = None, *, db: Any = None) -> dict[str, Any]:
     """Descuenta el stock de ``id_venta`` en los lotes de la sucursal de su farmacéutico (FEFO).
+
+    Parámetros: ``id_venta``. Retorno: ``{id_venta, aplicado_ahora, stock_aplicado, asignaciones, nota}`` con
+    las asignaciones ``{id_producto, id_lote, unidades}``. Motor: MongoDB (``ventas`` y ``stock_lotes``).
 
     - Venta con ``stock_aplicado = true``: devuelve las asignaciones registradas, sin descontar de nuevo.
     - Venta Pendiente o Anulada: se rechaza.

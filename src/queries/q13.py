@@ -126,7 +126,6 @@ def _baja(db: Any, client: Any, id_cliente: str | None) -> dict[str, Any]:
 
     return ejecutar_en_transaccion(client, operacion)
 
-
 def ejecutar(
     accion: str,
     id_cliente: str | None = None,
@@ -142,7 +141,16 @@ def ejecutar(
     *,
     db: Any = None,
 ) -> dict[str, Any]:
-    """Punto de entrada compartido por la API, la CLI y los tests. ``db`` permite inyectar otra base."""
+    """ABM de clientes: alta, modificación de contacto/cobertura y baja lógica.
+
+    Propósito: mantener la colección ``clientes`` respetando la unicidad del DNI.
+    Parámetros: ``accion`` (alta | modificacion | baja); alta: nombre, apellido, dni, ciudad, provincia y
+    obra_social (obligatorios), email, telefono y nro_afiliado (opcionales); modificacion: ``id_cliente`` y
+    solo email, telefono, obra_social o nro_afiliado; baja: ``id_cliente``. ``db`` permite inyectar otra base.
+    Retorno: ``{accion, antes, despues, cambio}``. Errores: VALIDACION_ERROR (400), DNI_DUPLICADO (409),
+    NO_ENCONTRADO (404).
+    Motor: MongoDB (``clientes`` y ``contadores``); cada escritura va en una transacción.
+    """
     accion = (accion or "").strip().lower()
     if accion not in ACCIONES:
         raise _error("accion debe ser alta, modificacion o baja.", accion=accion, validas=list(ACCIONES))
